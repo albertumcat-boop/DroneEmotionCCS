@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRONE EMOTION CCS</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:#000;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+
+/* ── CANVAS ── */
+#c{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;
+  transition:opacity .8s ease;
+}
+#c.hidden{opacity:0;pointer-events:none;}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.2rem 5%;
+  background:rgba(0,0,0,0);
+  backdrop-filter:blur(0px);
+  transition:all .4s ease;
+  border-bottom:1px solid transparent;
+}
+nav.scrolled{
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(20px);
+  border-bottom-color:rgba(91,141,184,.15);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1;}
+.nav-logo-text span:first-child{font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;color:#5B8DB8;letter-spacing:.14em;}
+.nav-logo-text span:last-child{font-family:'Orbitron',sans-serif;font-size:.44rem;color:rgba(91,141,184,.55);letter-spacing:.3em;margin-top:2px;}
+.nav-links{display:flex;gap:2.5rem;list-style:none;}
+.nav-links a{font-family:'Orbitron',sans-serif;font-size:.52rem;font-weight:600;color:rgba(255,255,255,.55);text-decoration:none;letter-spacing:.2em;transition:color .3s;}
+.nav-links a:hover{color:#5B8DB8;}
+.nav-cta{font-family:'Orbitron',sans-serif;font-size:.5rem;font-weight:700;letter-spacing:.2em;padding:.55rem 1.3rem;border:1px solid #5B8DB8;color:#5B8DB8;text-decoration:none;transition:all .3s;}
+.nav-cta:hover{background:#5B8DB8;color:#000;}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;}
+.hamburger span{display:block;width:22px;height:2px;background:#5B8DB8;transition:all .3s;}
+
+/* ── SCROLL SECTIONS (sit above canvas) ── */
+#scroll-wrap{position:relative;z-index:10;pointer-events:none;}
+
+/* ── NARRATIVE SECTIONS ── */
+.story-section{
+  height:100vh;
+  display:flex;align-items:center;
+  padding:0 6%;
+  position:relative;
+  pointer-events:none;
+}
+.story-section.right{justify-content:flex-end;}
+
+.story-content{max-width:420px;pointer-events:auto;}
+.story-index{font-family:'Orbitron',sans-serif;font-size:.48rem;color:#5B8DB8;letter-spacing:.5em;margin-bottom:.6rem;display:flex;align-items:center;gap:10px;}
+.story-index::before{content:'';display:block;width:24px;height:1px;background:#5B8DB8;}
+.story-tag{font-family:'Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.35);letter-spacing:.3em;margin-bottom:.4rem;}
+.story-h2{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,4vw,3rem);font-weight:800;line-height:1.05;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;}
+.story-h2 .accent{color:#5B8DB8;}
+.story-desc{font-family:'Rajdhani',sans-serif;font-size:1rem;color:rgba(255,255,255,.45);line-height:1.75;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.5rem;}
+.story-specs{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1.5rem;}
+.spec-item{border-left:1px solid rgba(91,141,184,.3);padding:.5rem .75rem;}
+.spec-label{font-family:'Orbitron',sans-serif;font-size:.42rem;color:#5B8DB8;letter-spacing:.3em;display:block;margin-bottom:.2rem;}
+.spec-val{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;}
+
+/* Scroll hint */
+.scroll-hint{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-family:'Orbitron',sans-serif;font-size:.4rem;color:rgba(255,255,255,.3);letter-spacing:.35em;
+}
+.scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,#5B8DB8,transparent);animation:sp 2s ease-in-out infinite;}
+@keyframes sp{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+/* Opacity reveal for story sections */
+.story-content{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease;}
+.story-content.vis{opacity:1;transform:translateY(0);}
+
+/* ── BOTTOM SECTIONS (standard HTML) ── */
+#site-footer-sections{position:relative;z-index:20;background:#000;}
+
+section.std{padding:6rem 8%;position:relative;}
+section.std.bg-navy{background:#1a1f3a;}
+section.std.bg-black{background:#000;}
+
+.sec-tag{font-family:'Orbitron',sans-serif;font-size:.5rem;color:#5B8DB8;letter-spacing:.4em;margin-bottom:.8rem;display:flex;align-items:center;gap:10px;}
+.sec-tag::before{content:'';display:block;width:22px;height:1px;background:#5B8DB8;}
+.sec-title{font-family:'Orbitron',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.06em;line-height:1.1;margin-bottom:.8rem;font-size:clamp(1.5rem,3vw,2.6rem);}
+.sec-title .a{color:#5B8DB8;}
+.sec-sub{font-family:'Rajdhani',sans-serif;font-size:.95rem;color:rgba(255,255,255,.4);letter-spacing:.07em;text-transform:uppercase;max-width:520px;line-height:1.7;margin-bottom:3rem;}
+
+/* Service cards */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2px;background:rgba(91,141,184,.1);}
+.card{background:#1a1f3a;padding:2.2rem 1.8rem;position:relative;overflow:hidden;transition:background .4s;cursor:default;}
+.card::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:#5B8DB8;transition:width .4s;}
+.card:hover{background:rgba(91,141,184,.07);}
+.card:hover::after{width:100%;}
+.card-num{position:absolute;top:1.2rem;right:1.2rem;font-family:'Orbitron',sans-serif;font-size:.42rem;color:rgba(91,141,184,.25);letter-spacing:.2em;}
+.card-icon{width:44px;height:44px;border-radius:50%;background:#000;border:1px solid rgba(91,141,184,.3);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;}
+.card-icon svg{width:20px;height:20px;stroke:#5B8DB8;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.card-name{font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.14em;color:#fff;margin-bottom:.6rem;}
+.card-desc{font-family:'Rajdhani',sans-serif;font-size:.9rem;color:rgba(255,255,255,.45);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;}
+
+/* Why grid */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(91,141,184,.1);}
+.why-card{background:#000;padding:2.5rem 1.8rem;text-align:center;transition:background .4s;cursor:default;position:relative;}
+.why-card:hover{background:rgba(26,31,58,.55);}
+.why-card .ci{width:60px;height:60px;border-radius:50%;background:#000;border:1px solid rgba(91,141,184,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;transition:all .3s;}
+.why-card:hover .ci{border-color:#5B8DB8;box-shadow:0 0 20px rgba(91,141,184,.2);}
+.why-card .ci svg{width:26px;height:26px;stroke:#5B8DB8;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.why-card h3{font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.12em;color:#fff;margin-bottom:.6rem;}
+.why-card p{font-family:'Rajdhani',sans-serif;font-size:.9rem;color:rgba(255,255,255,.45);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;}
+
+/* Gallery */
+.gal-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:420px 220px;gap:3px;}
+.gi{position:relative;overflow:hidden;cursor:pointer;}
+.gi-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:transform .5s;}
+.gi:hover .gi-ph{transform:scale(1.05);}
+.gi-ph svg{width:32px;height:32px;stroke:rgba(91,141,184,.28);fill:none;stroke-width:1.2;}
+.gi-ph span{font-family:'Orbitron',sans-serif;font-size:.4rem;color:rgba(91,141,184,.28);letter-spacing:.3em;}
+.gi-ov{position:absolute;inset:0;background:rgba(91,141,184,0);display:flex;align-items:flex-end;padding:1rem;transition:background .4s;}
+.gi:hover .gi-ov{background:rgba(91,141,184,.1);}
+.gi-ov span{font-family:'Orbitron',sans-serif;font-size:.44rem;letter-spacing:.2em;color:rgba(255,255,255,0);transition:color .4s;}
+.gi:hover .gi-ov span{color:rgba(255,255,255,.85);}
+
+/* Contact */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;}
+.cd{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.8rem;}
+.cd-icon{width:42px;height:42px;border-radius:50%;background:#000;border:1px solid rgba(91,141,184,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cd-icon svg{width:18px;height:18px;stroke:#5B8DB8;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.cd-label{font-family:'Orbitron',sans-serif;font-size:.42rem;color:#5B8DB8;letter-spacing:.3em;display:block;margin-bottom:3px;}
+.cd-val{font-family:'Rajdhani',sans-serif;font-size:.95rem;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;}
+.wa-btn{display:inline-flex;align-items:center;gap:9px;margin-top:1.2rem;padding:.8rem 1.6rem;background:#25D366;color:#000;text-decoration:none;font-family:'Orbitron',sans-serif;font-size:.52rem;font-weight:700;letter-spacing:.15em;transition:all .3s;}
+.wa-btn:hover{opacity:.88;transform:translateY(-2px);}
+.wa-btn svg{width:16px;height:16px;fill:#000;}
+.cf{display:flex;flex-direction:column;gap:.9rem;}
+.cf label{font-family:'Orbitron',sans-serif;font-size:.42rem;letter-spacing:.3em;color:#5B8DB8;display:block;margin-bottom:5px;}
+.cf input,.cf select,.cf textarea{background:rgba(26,31,58,.55);border:1px solid rgba(91,141,184,.2);color:#fff;font-family:'Rajdhani',sans-serif;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;padding:.7rem .9rem;width:100%;outline:none;transition:border-color .3s;appearance:none;-webkit-appearance:none;}
+.cf input:focus,.cf select:focus,.cf textarea:focus{border-color:#5B8DB8;}
+.cf textarea{resize:vertical;min-height:100px;}
+.cf select option{background:#1a1f3a;}
+.cf input::placeholder,.cf textarea::placeholder{color:rgba(255,255,255,.28);}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.btn-sub{font-family:'Orbitron',sans-serif;font-size:.54rem;font-weight:700;letter-spacing:.25em;padding:.9rem 2rem;background:#5B8DB8;color:#000;border:none;cursor:pointer;transition:all .3s;align-self:flex-start;margin-top:.3rem;}
+.btn-sub:hover{opacity:.85;transform:translateY(-2px);}
+.btn-sub.ok{background:#25D366;}
+
+footer{background:#1a1f3a;border-top:1px solid rgba(91,141,184,.12);padding:2rem 8%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+footer span{font-family:'Rajdhani',sans-serif;font-size:.85rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.08em;}
+.fl{display:flex;gap:2rem;list-style:none;}
+.fl a{font-family:'Orbitron',sans-serif;font-size:.44rem;color:rgba(255,255,255,.25);text-decoration:none;letter-spacing:.2em;transition:color .3s;}
+.fl a:hover{color:#5B8DB8;}
+
+/* Reveal */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
+.rv.v{opacity:1;transform:translateY(0);}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
+
+/* Mobile */
+@media(max-width:900px){
+  .nav-links,.nav-cta{display:none;}
+  .hamburger{display:flex;}
+  .why-grid{grid-template-columns:1fr;}
+  .contact-grid{grid-template-columns:1fr;gap:2.5rem;}
+  .cf-row{grid-template-columns:1fr;}
+  .gal-grid{grid-template-columns:1fr 1fr;}
+  .gi{grid-column:span 1!important;grid-row:span 1!important;height:200px!important;}
+  .story-section{padding:0 5%;}
+}
+@media(max-width:600px){
+  section.std{padding:3.5rem 5%;}
+  .cards-grid{grid-template-columns:1fr;}
+  .gal-grid{grid-template-columns:1fr;}
+  .gi{height:180px!important;}
+  footer{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- THREE.JS CANVAS -->
+<canvas id="c"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#s0" class="nav-logo">
+    <svg width="38" height="38" viewBox="0 0 100 100" fill="none">
+      <circle cx="50" cy="50" r="48" fill="#000" stroke="#5B8DB8" stroke-width="1.5"/>
+      <path d="M8 52 Q30 44 50 52 Q70 44 92 52" stroke="#5B8DB8" stroke-width="2.8" stroke-linecap="round"/>
+      <path d="M43 46 L50 65 L57 46" stroke="#5B8DB8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="50" cy="36" r="10" stroke="#5B8DB8" stroke-width="2.5"/>
+      <circle cx="50" cy="36" r="3.5" fill="#5B8DB8"/>
+    </svg>
+    <div class="nav-logo-text">
+      <span>DRONE EMOTION</span>
+      <span>CCS</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#nosotros">Nosotros</a></li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <a href="#contacto" class="nav-cta">Cotizar</a>
+  <button class="hamburger" id="hbg" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile menu -->
+<div id="mob-menu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.97);flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;">
+  <a href="#servicios" onclick="closeMob()" style="font-family:Orbitron,sans-serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:.3em;">Servicios</a>
+  <a href="#nosotros"  onclick="closeMob()" style="font-family:Orbitron,sans-serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:.3em;">Nosotros</a>
+  <a href="#galeria"   onclick="closeMob()" style="font-family:Orbitron,sans-serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:.3em;">Galería</a>
+  <a href="#contacto"  onclick="closeMob()" style="font-family:Orbitron,sans-serif;font-size:1rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:.3em;">Contacto</a>
+</div>
+
+<!-- SCROLL WRAPPER -->
+<div id="scroll-wrap">
+
+  <!-- S0: HERO -->
+  <section class="story-section" id="s0">
+    <div class="story-content vis" style="opacity:0;transition:opacity 1.2s ease .5s;transform:none;" id="hero-content">
+      <div class="story-index">Caracas, Venezuela</div>
+      <div class="story-tag">DRONE EMOTION CCS</div>
+      <h1 class="story-h2">EL MUNDO<br>DESDE LAS<br><span class="accent">ALTURAS</span></h1>
+      <p class="story-desc">Fotografía y video aéreo de precisión<br>para proyectos que exigen lo extraordinario.</p>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem;">
+        <a href="#s1" style="font-family:Orbitron,sans-serif;font-size:.56rem;font-weight:700;letter-spacing:.25em;padding:.9rem 2.2rem;background:#5B8DB8;color:#000;text-decoration:none;transition:all .3s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Ver Specs</a>
+        <a href="#contacto" style="font-family:Orbitron,sans-serif;font-size:.56rem;font-weight:600;letter-spacing:.25em;padding:.9rem 2.2rem;border:1px solid rgba(255,255,255,.25);color:#fff;text-decoration:none;transition:all .3s;" onmouseover="this.style.borderColor='#5B8DB8';this.style.color='#5B8DB8'" onmouseout="this.style.borderColor='rgba(255,255,255,.25)';this.style.color='#fff'">Cotizar</a>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+      Scroll
+    </div>
+  </section>
+
+  <!-- S1: PROPULSIÓN -->
+  <section class="story-section right" id="s1">
+    <div class="story-content" id="sc1">
+      <div class="story-index">01 — Especificaciones</div>
+      <div class="story-tag">SISTEMA DE VUELO</div>
+      <h2 class="story-h2">PROPUL<br><span class="accent">SIÓN</span></h2>
+      <p class="story-desc">Cuatro motores brushless de alta eficiencia con controladores de velocidad electrónicos (ESC) de 40A para máxima potencia y estabilidad en condiciones adversas.</p>
+      <div class="story-specs">
+        <div class="spec-item"><span class="spec-label">Motores</span><span class="spec-val">4× BL</span></div>
+        <div class="spec-item"><span class="spec-label">RPM Max</span><span class="spec-val">9,500</span></div>
+        <div class="spec-item"><span class="spec-label">ESC</span><span class="spec-val">40A</span></div>
+        <div class="spec-item"><span class="spec-label">Empuje</span><span class="spec-val">2.4 KG</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S2: VISIÓN -->
+  <section class="story-section" id="s2">
+    <div class="story-content" id="sc2">
+      <div class="story-index">02 — Especificaciones</div>
+      <div class="story-tag">SISTEMA DE IMAGEN</div>
+      <h2 class="story-h2">VISIÓN<br><span class="accent">4K</span></h2>
+      <p class="story-desc">Cámara gimbal de 3 ejes con estabilización mecánica activa. Sensor CMOS de 1 pulgada con lente de apertura f/2.8 para tomas cinematográficas en cualquier condición de luz.</p>
+      <div class="story-specs">
+        <div class="spec-item"><span class="spec-label">Resolución</span><span class="spec-val">4K/60</span></div>
+        <div class="spec-item"><span class="spec-label">Sensor</span><span class="spec-val">1"</span></div>
+        <div class="spec-item"><span class="spec-label">Gimbal</span><span class="spec-val">3-Axis</span></div>
+        <div class="spec-item"><span class="spec-label">Apertura</span><span class="spec-val">f/2.8</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S3: ESTRUCTURA -->
+  <section class="story-section right" id="s3">
+    <div class="story-content" id="sc3">
+      <div class="story-index">03 — Especificaciones</div>
+      <div class="story-tag">INGENIERÍA</div>
+      <h2 class="story-h2">ESTRUC<br><span class="accent">TURA</span></h2>
+      <p class="story-desc">Chasis en fibra de carbono de alta rigidez con brazos abatibles. Diseño aerodinámico que minimiza resistencia y maximiza tiempo de vuelo hasta 45 minutos por carga.</p>
+      <div class="story-specs">
+        <div class="spec-item"><span class="spec-label">Material</span><span class="spec-val">CF</span></div>
+        <div class="spec-item"><span class="spec-label">Peso</span><span class="spec-val">895G</span></div>
+        <div class="spec-item"><span class="spec-label">Vuelo</span><span class="spec-val">45 MIN</span></div>
+        <div class="spec-item"><span class="spec-label">Velocidad</span><span class="spec-val">72 KMH</span></div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /scroll-wrap -->
+
+<!-- STANDARD SECTIONS -->
+<div id="site-footer-sections">
+
+  <!-- SERVICES -->
+  <section class="std bg-navy" id="servicios">
+    <p class="sec-tag rv">Lo Que Hacemos</p>
+    <h2 class="sec-title rv">NUESTROS <span class="a">SERVICIOS</span></h2>
+    <p class="sec-sub rv d1">Soluciones aéreas profesionales con tecnología de punta para cada tipo de proyecto.</p>
+    <div class="cards-grid">
+      <div class="card rv">
+        <span class="card-num">01</span>
+        <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <div class="card-name">Fotografía Aérea</div>
+        <div class="card-desc">Imágenes de alta resolución desde perspectivas imposibles desde tierra.</div>
+      </div>
+      <div class="card rv d1">
+        <span class="card-num">02</span>
+        <div class="card-icon"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+        <div class="card-name">Video Aéreo 4K</div>
+        <div class="card-desc">Producción cinematográfica con estabilización profesional y resolución 4K.</div>
+      </div>
+      <div class="card rv d2">
+        <span class="card-num">03</span>
+        <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="card-name">Inspección Técnica</div>
+        <div class="card-desc">Diagnóstico visual de estructuras, torres y tejados de difícil acceso.</div>
+      </div>
+      <div class="card rv d3">
+        <span class="card-num">04</span>
+        <div class="card-icon"><svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></div>
+        <div class="card-name">Mapeo y Topografía</div>
+        <div class="card-desc">Levantamientos cartográficos de alta precisión y modelos 3D.</div>
+      </div>
+      <div class="card rv d4">
+        <span class="card-num">05</span>
+        <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div class="card-name">Cobertura de Eventos</div>
+        <div class="card-desc">Bodas, conciertos y eventos corporativos desde ángulos únicos.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section class="std bg-black" id="nosotros">
+    <p class="sec-tag rv">Por Qué Elegirnos</p>
+    <h2 class="sec-title rv">PRECISIÓN EN <span class="a">CADA VUELO</span></h2>
+    <p class="sec-sub rv d1">Tecnología avanzada, experiencia operativa y pasión por la imagen.</p>
+    <div class="why-grid">
+      <div class="why-card rv">
+        <div class="ci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3>Respuesta Rápida</h3>
+        <p>Coordinación ágil y entregas en tiempo récord.</p>
+      </div>
+      <div class="why-card rv d2">
+        <div class="ci"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <h3>Cobertura Local</h3>
+        <p>Operamos en Caracas y Venezuela con conocimiento del territorio.</p>
+      </div>
+      <div class="why-card rv d4">
+        <div class="ci"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+        <h3>Atención Directa</h3>
+        <p>Atención personalizada desde la planificación hasta la entrega.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="std bg-navy" id="galeria">
+    <p class="sec-tag rv">Trabajos Realizados</p>
+    <h2 class="sec-title rv">NUESTRA <span class="a">GALERÍA</span></h2>
+    <p class="sec-sub rv d1">Una muestra de perspectivas capturadas sobre Caracas y Venezuela.</p>
+    <div class="gal-grid rv d2">
+      <div class="gi" style="grid-column:span 7;height:420px"><div class="gi-ph" style="background:linear-gradient(135deg,#090c18,#141929,#0c1020)"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Vista Panorámica</span></div><div class="gi-ov"><span>Caracas / Vista Aérea</span></div></div>
+      <div class="gi" style="grid-column:span 5;height:205px"><div class="gi-ph" style="background:linear-gradient(135deg,#0a0e20,#1c2040)"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>Video 4K</span></div><div class="gi-ov"><span>Video Corporativo</span></div></div>
+      <div class="gi" style="grid-column:span 5;height:213px"><div class="gi-ph" style="background:linear-gradient(135deg,#0e1a1a,#1a3030)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Evento</span></div><div class="gi-ov"><span>Boda / Evento</span></div></div>
+      <div class="gi" style="grid-column:span 4;height:220px"><div class="gi-ph" style="background:linear-gradient(135deg,#0e1820,#1a2840)"><svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/></svg><span>Mapeo</span></div><div class="gi-ov"><span>Topografía</span></div></div>
+      <div class="gi" style="grid-column:span 4;height:220px"><div class="gi-ph" style="background:linear-gradient(135deg,#14100e,#2a1e18)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Inspección</span></div><div class="gi-ov"><span>Inspección Técnica</span></div></div>
+      <div class="gi" style="grid-column:span 4;height:220px"><div class="gi-ph" style="background:linear-gradient(135deg,#0a1420,#12243a)"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Arquitectura</span></div><div class="gi-ov"><span>Fotografía Arquitectónica</span></div></div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="std bg-black" id="contacto">
+    <p class="sec-tag rv">Hablemos</p>
+    <h2 class="sec-title rv">SOLICITA TU <span class="a">COTIZACIÓN</span></h2>
+    <p class="sec-sub rv d1">Cuéntanos sobre tu proyecto. Te respondemos en menos de 24 horas.</p>
+    <div class="contact-grid">
+      <div class="rv">
+        <div class="cd"><div class="cd-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><span class="cd-label">Ubicación</span><span class="cd-val">Caracas, Venezuela</span></div></div>
+        <div class="cd"><div class="cd-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div><div><span class="cd-label">Teléfono / WhatsApp</span><span class="cd-val">+58 XXX XXX XXXX</span></div></div>
+        <div class="cd"><div class="cd-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div><span class="cd-label">Email</span><span class="cd-val">info@droneemotionccs.com</span></div></div>
+        <a href="https://wa.me/58XXXXXXXXXX" class="wa-btn" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Escribir por WhatsApp
+        </a>
+      </div>
+      <form class="cf rv d2" id="contact-form">
+        <div class="cf-row">
+          <div><label>Nombre</label><input type="text" placeholder="Tu nombre" required></div>
+          <div><label>Empresa</label><input type="text" placeholder="Opcional"></div>
+        </div>
+        <div><label>Correo</label><input type="email" placeholder="tu@email.com" required></div>
+        <div><label>Servicio</label><select><option value="">Selecciona un servicio</option><option>Fotografía Aérea</option><option>Video Aéreo 4K</option><option>Inspección Técnica</option><option>Mapeo y Topografía</option><option>Cobertura de Eventos</option><option>Otro</option></select></div>
+        <div><label>Proyecto</label><textarea placeholder="Cuéntanos sobre tu proyecto..." required></textarea></div>
+        <button type="submit" class="btn-sub" id="sub-btn">Enviar Solicitud</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 Drone Emotion CCS — Caracas, Venezuela</span>
+    <ul class="fl">
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#galeria">Galería</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </footer>
+
+</div><!-- /site-footer-sections -->
+
+<!-- THREE.JS -->
+<script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+<script>
+/* ══════════════════════════════════════════
+   THREE.JS DRONE SCENE
+══════════════════════════════════════════ */
+(function(){
+const canvas = document.getElementById('c');
+const W = window.innerWidth, H = window.innerHeight;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(W,H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(48, W/H, 0.1, 100);
+camera.position.set(0, 1.8, 7);
+
+// ── Fog for depth ──
+scene.fog = new THREE.FogExp2(0x000205, 0.08);
+
+// ── LIGHTING ──
+scene.add(new THREE.AmbientLight(0x040810, 1.0));
+
+const keyLight = new THREE.DirectionalLight(0x7ab4d8, 4.0);
+keyLight.position.set(-4, 6, 5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(1024,1024);
+scene.add(keyLight);
+
+const rimLight = new THREE.DirectionalLight(0x9dd4f0, 2.5);
+rimLight.position.set(5, 2, -4);
+scene.add(rimLight);
+
+const bottomFill = new THREE.PointLight(0x1a2a4a, 1.2, 14);
+bottomFill.position.set(0,-4,1);
+scene.add(bottomFill);
+
+const droneGlow = new THREE.PointLight(0x5B8DB8, 1.8, 5);
+droneGlow.position.set(0,0,0);
+scene.add(droneGlow);
+
+// Top accent
+const topAccent = new THREE.PointLight(0x8ad0f5, 1.0, 8);
+topAccent.position.set(0, 4, 0);
+scene.add(topAccent);
+
+// ── MATERIALS ──
+const matCarbon = new THREE.MeshStandardMaterial({ color:0x0d1020, metalness:0.35, roughness:0.65 });
+const matMetal  = new THREE.MeshStandardMaterial({ color:0x1c2a3e, metalness:0.88, roughness:0.18 });
+const matMotor  = new THREE.MeshStandardMaterial({ color:0x111825, metalness:0.92, roughness:0.12 });
+const matSteel  = new THREE.MeshStandardMaterial({ color:0x5B8DB8, metalness:0.72, roughness:0.28, emissive:0x112233, emissiveIntensity:0.5 });
+const matProp   = new THREE.MeshStandardMaterial({ color:0x1e2d45, metalness:0.25, roughness:0.75, transparent:true, opacity:0.88, side:THREE.DoubleSide });
+const matDisc   = new THREE.MeshStandardMaterial({ color:0x5B8DB8, metalness:0.4,  roughness:0.5,  transparent:true, opacity:0.13, side:THREE.DoubleSide });
+const matLens   = new THREE.MeshStandardMaterial({ color:0x050810, metalness:0.05, roughness:0.02, transparent:true, opacity:0.96 });
+const matFC     = new THREE.MeshStandardMaterial({ color:0x152030, metalness:0.55, roughness:0.45, emissive:0x0a1525, emissiveIntensity:0.6 });
+
+// ── BUILD DRONE ──
+const droneGroup = new THREE.Group();
+scene.add(droneGroup);
+
+// Motor positions (X-frame)
+const motorPosBase = [
+  new THREE.Vector3( 1.38, 0.12,  1.38),
+  new THREE.Vector3(-1.38, 0.12,  1.38),
+  new THREE.Vector3( 1.38, 0.12, -1.38),
+  new THREE.Vector3(-1.38, 0.12, -1.38),
+];
+const ledColors = [0x5B8DB8, 0x4ade80, 0xf87171, 0xf87171];
+const propDirs  = [1,-1,-1,1];
+
+const propGroups = [];
+const motorGroupsArr = [];
+
+// Body ── octagonal cylinder
+const bodyGeom = new THREE.CylinderGeometry(0.72, 0.62, 0.2, 8);
+const body = new THREE.Mesh(bodyGeom, matCarbon);
+body.castShadow = true;
+droneGroup.add(body);
+
+// Body top lid
+const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.62,0.055,8), matMetal);
+lid.position.y = 0.125;
+droneGroup.add(lid);
+
+// Flight controller panel
+const fc = new THREE.Mesh(new THREE.BoxGeometry(0.55,0.04,0.55), matFC);
+fc.position.y = 0.148;
+droneGroup.add(fc);
+
+// FC chip detail
+const chip = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.03,0.28), new THREE.MeshStandardMaterial({color:0x1e3048,metalness:0.6,roughness:0.4,emissive:0x0d1f30,emissiveIntensity:0.8}));
+chip.position.y = 0.162;
+droneGroup.add(chip);
+
+// Bottom plate
+const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.52,0.04,8), matMotor);
+plate.position.y = -0.12;
+droneGroup.add(plate);
+
+// Antenna
+const antBody = new THREE.Mesh(new THREE.CylinderGeometry(0.014,0.014,0.5,6), matMetal);
+antBody.position.set(0.12,0.42,0); antBody.rotation.z=0.08;
+droneGroup.add(antBody);
+const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.028,8,8),
+  new THREE.MeshStandardMaterial({color:0x5B8DB8,emissive:0x5B8DB8,emissiveIntensity:2.2}));
+antTip.position.set(0.16,0.67,0);
+droneGroup.add(antTip);
+
+motorPosBase.forEach((mpos, idx) => {
+  // Arm
+  const armLen = mpos.length() * 0.82;
+  const armG = new THREE.BoxGeometry(armLen, 0.1, 0.2);
+  const arm = new THREE.Mesh(armG, matMetal);
+  arm.position.copy(mpos).multiplyScalar(0.44);
+  arm.lookAt(mpos); arm.castShadow = true;
+  droneGroup.add(arm);
+
+  // Arm lower brace
+  const brace = new THREE.Mesh(new THREE.BoxGeometry(armLen*0.65,0.055,0.1), matCarbon);
+  brace.position.copy(mpos).multiplyScalar(0.36);
+  brace.lookAt(mpos);
+  droneGroup.add(brace);
+
+  // Motor group
+  const mg = new THREE.Group();
+  mg.position.copy(mpos);
+
+  const mBase = new THREE.Mesh(new THREE.CylinderGeometry(0.23,0.20,0.3,16), matMotor);
+  mBase.castShadow = true;
+  mg.add(mBase);
+
+  const mCap = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,0.07,16), matMetal);
+  mCap.position.y = 0.18;
+  mg.add(mCap);
+
+  const mShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.042,0.042,0.18,10), matSteel);
+  mShaft.position.y = 0.26;
+  mg.add(mShaft);
+
+  // Motor ridge lines (detail)
+  for(let r=0;r<8;r++){
+    const angle = (r/8)*Math.PI*2;
+    const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.018,0.28,0.018),
+      new THREE.MeshStandardMaterial({color:0x0a1018,metalness:0.9,roughness:0.2}));
+    ridge.position.set(Math.cos(angle)*0.215, 0, Math.sin(angle)*0.215);
+    mg.add(ridge);
+  }
+
+  droneGroup.add(mg);
+  motorGroupsArr.push(mg);
+
+  // Prop guard ring
+  const guard = new THREE.Mesh(new THREE.TorusGeometry(0.54,0.022,8,48), matSteel);
+  guard.position.copy(mpos); guard.position.y += 0.32;
+  guard.rotation.x = Math.PI/2;
+  droneGroup.add(guard);
+
+  // Guard spokes
+  for(let s=0;s<3;s++){
+    const sa = (s/3)*Math.PI*2;
+    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.012,0.012),
+      new THREE.MeshStandardMaterial({color:0x0d1828,metalness:0.85,roughness:0.2}));
+    spoke.position.copy(mpos); spoke.position.y += 0.32;
+    spoke.rotation.y = sa;
+    droneGroup.add(spoke);
+  }
+
+  // Propeller group (spinning)
+  const pg = new THREE.Group();
+  pg.position.copy(mpos); pg.position.y += 0.37;
+  pg.userData.dir = propDirs[idx];
+
+  // 2 blades × 2 sides
+  for(let b=0;b<2;b++){
+    const shape = new THREE.Shape();
+    shape.moveTo(0,0);
+    shape.bezierCurveTo(0.06,0.035, 0.32,0.065, 0.50,0.042);
+    shape.bezierCurveTo(0.50,0.008, 0.46,-0.035, 0.42,-0.042);
+    shape.bezierCurveTo(0.26,-0.052, 0.05,-0.018, 0,0);
+    const bGeom = new THREE.ShapeGeometry(shape);
+    const blade = new THREE.Mesh(bGeom, matProp);
+    blade.rotation.y = (b/2)*Math.PI;
+    blade.rotation.x = -0.1;
+    pg.add(blade);
+    const bladeMirror = blade.clone();
+    bladeMirror.scale.x = -1;
+    pg.add(bladeMirror);
+  }
+
+  // Motion-blur disc
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(0.52,64), matDisc);
+  disc.rotation.x = -Math.PI/2;
+  pg.add(disc);
+
+  propGroups.push(pg);
+  droneGroup.add(pg);
+
+  // LED
+  const ledMat = new THREE.MeshStandardMaterial({color:ledColors[idx],emissive:ledColors[idx],emissiveIntensity:2.5});
+  const led = new THREE.Mesh(new THREE.SphereGeometry(0.038,8,8), ledMat);
+  led.position.copy(mpos); led.position.y += 0.22;
+  droneGroup.add(led);
+
+  const ledLight = new THREE.PointLight(ledColors[idx], 1.0, 1.8);
+  ledLight.position.copy(mpos); ledLight.position.y += 0.22;
+  droneGroup.add(ledLight);
+});
+
+// ── GIMBAL + CAMERA ──
+const gimbalG = new THREE.Group();
+gimbalG.position.y = -0.12;
+
+const gimArm = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.028,0.32,8), matMotor);
+gimArm.position.y = -0.18; gimbalG.add(gimArm);
+
+// Outer gimbal ring (yaw axis)
+const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.28,0.024,8,36), matSteel);
+ring1.position.y = -0.36; ring1.rotation.x = Math.PI/2; gimbalG.add(ring1);
+
+// Inner ring (roll axis)
+const ring2 = new THREE.Mesh(new THREE.TorusGeometry(0.22,0.018,8,36), matMetal);
+ring2.position.y = -0.42; ring2.rotation.set(Math.PI/3,0,Math.PI/6); gimbalG.add(ring2);
+
+// Camera housing
+const camH = new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.13,0.24,12), matMotor);
+camH.position.y = -0.56; camH.castShadow = true; gimbalG.add(camH);
+
+// Camera front lens housing
+const lensH = new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.11,0.07,20), matMotor);
+lensH.position.y = -0.70; gimbalG.add(lensH);
+
+// Outer lens glass
+const lensG = new THREE.Mesh(new THREE.CircleGeometry(0.09,32), matLens);
+lensG.position.y = -0.738; lensG.rotation.x = -Math.PI/2; gimbalG.add(lensG);
+
+// Lens coatings (colored circles)
+const lensCoat1 = new THREE.Mesh(new THREE.CircleGeometry(0.075,32),
+  new THREE.MeshStandardMaterial({color:0x1a2d4a,metalness:0.1,roughness:0.0,transparent:true,opacity:0.7}));
+lensCoat1.position.y = -0.736; lensCoat1.rotation.x = -Math.PI/2; gimbalG.add(lensCoat1);
+
+const lensCenter = new THREE.Mesh(new THREE.CircleGeometry(0.048,32),
+  new THREE.MeshStandardMaterial({color:0x5B8DB8,emissive:0x1a3a5a,emissiveIntensity:0.6,transparent:true,opacity:0.5}));
+lensCenter.position.y = -0.734; lensCenter.rotation.x = -Math.PI/2; gimbalG.add(lensCenter);
+
+// Lens glint
+const glint = new THREE.Mesh(new THREE.CircleGeometry(0.018,8),
+  new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:1.5,transparent:true,opacity:0.55}));
+glint.position.set(0.04,-0.733,0.04); glint.rotation.x = -Math.PI/2; gimbalG.add(glint);
+
+// Side grips on camera
+[-1,1].forEach(side => {
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.045,0.12,0.06),
+    new THREE.MeshStandardMaterial({color:0x1a2235,metalness:0.8,roughness:0.3}));
+  grip.position.set(side*0.19,-0.55,0); gimbalG.add(grip);
+});
+
+droneGroup.add(gimbalG);
+
+// ── LANDING GEAR ──
+[[-0.32,0.32],[ 0.32,0.32],[-0.32,-0.32],[ 0.32,-0.32]].forEach(([x,z]) => {
+  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.38,6), matMotor);
+  leg.position.set(x,-0.38,z);
+  leg.rotation.z = x<0? 0.14:-0.14;
+  leg.rotation.x = z<0?-0.14: 0.14;
+  droneGroup.add(leg);
+});
+const r1 = new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.70,6), matMotor);
+r1.position.set(0,-0.55,0.32); r1.rotation.z = Math.PI/2; droneGroup.add(r1);
+const r2 = r1.clone(); r2.position.z = -0.32; droneGroup.add(r2);
+
+// Foot pads
+[[-0.35,0.32],[0.35,0.32],[-0.35,-0.32],[0.35,-0.32]].forEach(([x,z]) => {
+  const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.02,10),
+    new THREE.MeshStandardMaterial({color:0x5B8DB8,metalness:0.5,roughness:0.4,emissive:0x112233,emissiveIntensity:0.3}));
+  pad.position.set(x,-0.565,z);
+  droneGroup.add(pad);
+});
+
+// ── PARTICLES (floating dust/energy) ──
+const particleCount = 120;
+const pGeom = new THREE.BufferGeometry();
+const pPositions = new Float32Array(particleCount*3);
+const pSpeeds = [];
+for(let i=0;i<particleCount;i++){
+  pPositions[i*3]   = (Math.random()-0.5)*12;
+  pPositions[i*3+1] = (Math.random()-0.5)*8;
+  pPositions[i*3+2] = (Math.random()-0.5)*8;
+  pSpeeds.push({ x:(Math.random()-.5)*.004, y:(Math.random()-.5)*.006, z:(Math.random()-.5)*.004 });
+}
+pGeom.setAttribute('position', new THREE.BufferAttribute(pPositions,3));
+const particles = new THREE.Points(pGeom,
+  new THREE.PointsMaterial({color:0x5B8DB8,size:0.025,transparent:true,opacity:0.45}));
+scene.add(particles);
+
+// ── GROUND REFLECTION PLANE ──
+const groundMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(20,20),
+  new THREE.MeshStandardMaterial({color:0x020508,metalness:0.6,roughness:0.5,transparent:true,opacity:0.6})
+);
+groundMesh.rotation.x = -Math.PI/2;
+groundMesh.position.y = -2.8;
+groundMesh.receiveShadow = true;
+scene.add(groundMesh);
+
+// ── CAMERA STATES ──
+const states = [
+  { camPos:[0,1.8,7.0], targetY:0,   droneRY:0,    expFactor:0, propBlur:false, gimbalTilt:0   }, // Hero
+  { camPos:[1.6,0.8,4.0], targetY:0.15, droneRY:.3, expFactor:0, propBlur:true,  gimbalTilt:0   }, // Propulsión
+  { camPos:[0,-0.6,4.5], targetY:-0.5,droneRY:-.2, expFactor:0, propBlur:false, gimbalTilt:0.25 }, // Visión
+  { camPos:[-2.5,2.2,5.5], targetY:0, droneRY:.8,  expFactor:0.7,propBlur:false,gimbalTilt:0   }, // Estructura
+];
+
+// Current interpolated state
+let curState = { camX:0, camY:1.8, camZ:7, tgtY:0, droneRY:0, expF:0, propBlur:false };
+let targetState = {...curState};
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+function lerpState(s,t,alpha){
+  return {
+    camX: lerp(s.camX, t.camX, alpha),
+    camY: lerp(s.camY, t.camY, alpha),
+    camZ: lerp(s.camZ, t.camZ, alpha),
+    tgtY: lerp(s.tgtY, t.tgtY, alpha),
+    droneRY: lerp(s.droneRY, t.droneRY, alpha),
+    expF: lerp(s.expF, t.expF, alpha),
+  };
+}
+
+let sectionIdx = 0;
+let propSpeed = 0.3; // radians per frame
+
+// ── SCROLL ──
+let scrollProgress = 0;
+const STORY_SECTIONS = 4;
+
+window.addEventListener('scroll', () => {
+  const totalH = window.innerHeight * STORY_SECTIONS;
+  const scrollY = window.scrollY;
+  scrollProgress = Math.max(0, Math.min(1, scrollY / totalH));
+
+  const rawSection = scrollProgress * (STORY_SECTIONS-1);
+  const si = Math.floor(rawSection);
+  const sf = rawSection - si;
+
+  const s0 = states[Math.min(si, states.length-1)];
+  const s1 = states[Math.min(si+1, states.length-1)];
+
+  const ease = sf<0.5 ? 2*sf*sf : -1+(4-2*sf)*sf;
+
+  targetState = {
+    camX: lerp(s0.camPos[0], s1.camPos[0], ease),
+    camY: lerp(s0.camPos[1], s1.camPos[1], ease),
+    camZ: lerp(s0.camPos[2], s1.camPos[2], ease),
+    tgtY: lerp(s0.targetY, s1.targetY, ease),
+    droneRY: lerp(s0.droneRY, s1.droneRY, ease),
+    expF: lerp(s0.expFactor, s1.expFactor, ease),
+  };
+  propSpeed = lerp(0.3, si===1?0.55:0.3, ease);
+
+  // Hide canvas on standard sections
+  const canvas3d = document.getElementById('c');
+  if(scrollY > window.innerHeight * STORY_SECTIONS * 0.95){
+    canvas3d.style.opacity = Math.max(0,1-(scrollY-window.innerHeight*STORY_SECTIONS*0.95)/(window.innerHeight*0.3)).toString();
+  } else {
+    canvas3d.style.opacity = '1';
+  }
+});
+
+// ── ANIMATE ──
+const clock = new THREE.Clock();
+let floatT = 0;
+
+// Motor base positions for explosion
+const motorBasePosClone = motorPosBase.map(p=>p.clone());
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  floatT += dt;
+
+  // Smooth camera
+  curState.camX = lerp(curState.camX, targetState.camX, 0.04);
+  curState.camY = lerp(curState.camY, targetState.camY, 0.04);
+  curState.camZ = lerp(curState.camZ, targetState.camZ, 0.04);
+  curState.tgtY = lerp(curState.tgtY||0, targetState.tgtY, 0.04);
+  curState.droneRY = lerp(curState.droneRY||0, targetState.droneRY, 0.03);
+  curState.expF = lerp(curState.expF||0, targetState.expF, 0.04);
+
+  camera.position.set(curState.camX, curState.camY, curState.camZ);
+  camera.lookAt(0, curState.tgtY, 0);
+
+  // Drone float
+  droneGroup.position.y = Math.sin(floatT*0.8)*0.12;
+  // Slow auto-rotate + section rotate
+  droneGroup.rotation.y += 0.003;
+  gimbalG.rotation.y = Math.sin(floatT*0.4)*0.08;
+
+  // Spin props
+  propGroups.forEach(pg => {
+    pg.rotation.y += propSpeed * pg.userData.dir;
+  });
+
+  // Explosion effect
+  if(curState.expF > 0.01){
+    motorGroupsArr.forEach((mg,i)=>{
+      const base = motorBasePosClone[i];
+      const dir = base.clone().normalize();
+      const exp = curState.expF * 1.0;
+      mg.position.set(base.x+dir.x*exp, base.y+dir.y*exp*0.5, base.z+dir.z*exp);
+    });
+    propGroups.forEach((pg,i)=>{
+      const base = motorBasePosClone[i];
+      const dir = base.clone().normalize();
+      const exp = curState.expF * 1.0;
+      pg.position.set(base.x+dir.x*exp, base.y+0.37+dir.y*exp*0.5, base.z+dir.z*exp);
+    });
+  } else {
+    motorGroupsArr.forEach((mg,i)=>mg.position.copy(motorPosBase[i]));
+    propGroups.forEach((pg,i)=>{
+      const b = motorPosBase[i];
+      pg.position.set(b.x,b.y+0.37,b.z);
+    });
+  }
+
+  // Gimbal camera section highlight
+  gimbalG.children.forEach(c => {
+    if(c.material && c.material.emissiveIntensity !== undefined){
+      const targetEI = curState.tgtY < -0.3 ? 1.2 : 0.5;
+      c.material.emissiveIntensity = lerp(c.material.emissiveIntensity, targetEI, 0.05);
+    }
+  });
+
+  // Particle drift
+  const pos = particles.geometry.attributes.position.array;
+  for(let i=0;i<particleCount;i++){
+    pos[i*3]   += pSpeeds[i].x;
+    pos[i*3+1] += pSpeeds[i].y;
+    pos[i*3+2] += pSpeeds[i].z;
+    if(Math.abs(pos[i*3])>6)   pSpeeds[i].x *= -1;
+    if(Math.abs(pos[i*3+1])>4) pSpeeds[i].y *= -1;
+    if(Math.abs(pos[i*3+2])>4) pSpeeds[i].z *= -1;
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+
+  // Drone accent glow pulse
+  droneGlow.intensity = 1.8 + Math.sin(floatT*2)*0.4;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  const W2=innerWidth, H2=innerHeight;
+  renderer.setSize(W2,H2);
+  camera.aspect = W2/H2;
+  camera.updateProjectionMatrix();
+});
+
+// Hero content fade in
+setTimeout(()=>{ document.getElementById('hero-content').style.opacity='1'; },300);
+
+})();
+
+/* ══════════════════════════════════════════
+   UI LOGIC
+══════════════════════════════════════════ */
+
+// Nav scroll
+window.addEventListener('scroll', ()=>{
+  document.getElementById('nav').classList.toggle('scrolled', scrollY>30);
+});
+
+// Story section reveal on scroll
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add('vis');
+  });
+},{threshold:0.3});
+['sc1','sc2','sc3'].forEach(id=>{ const el=document.getElementById(id); if(el) obs.observe(el); });
+
+// Standard section reveals
+const obs2 = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('v'); });
+},{threshold:0.1});
+document.querySelectorAll('.rv').forEach(el=>obs2.observe(el));
+
+// Mobile menu
+function closeMob(){document.getElementById('mob-menu').style.display='none';}
+document.getElementById('hbg').onclick = ()=>{
+  const m=document.getElementById('mob-menu');
+  m.style.display = m.style.display==='flex'?'none':'flex';
+};
+
+// Form
+document.getElementById('contact-form').onsubmit = function(e){
+  e.preventDefault();
+  const btn=document.getElementById('sub-btn');
+  btn.textContent='Mensaje Enviado ✓'; btn.classList.add('ok');
+  setTimeout(()=>{ btn.textContent='Enviar Solicitud'; btn.classList.remove('ok'); this.reset(); },3000);
+};
+</script>
+</body>
+</html>
