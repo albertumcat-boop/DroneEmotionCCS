@@ -61,7 +61,7 @@ nav.scrolled{
 .story-index{font-family:'Orbitron',sans-serif;font-size:.48rem;color:#5B8DB8;letter-spacing:.5em;margin-bottom:.6rem;display:flex;align-items:center;gap:10px;}
 .story-index::before{content:'';display:block;width:24px;height:1px;background:#5B8DB8;}
 .story-tag{font-family:'Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.35);letter-spacing:.3em;margin-bottom:.4rem;}
-.story-h2{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,4vw,3rem);font-weight:800;line-height:1.05;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;}
+.story-h2{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,4vw,3rem);font-weight:800;line-height:1.05;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;word-break:keep-all;overflow-wrap:normal;hyphens:none;}
 .story-h2 .accent{color:#5B8DB8;}
 .story-desc{font-family:'Rajdhani',sans-serif;font-size:1rem;color:rgba(255,255,255,.45);line-height:1.75;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.5rem;}
 .story-specs{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1.5rem;}
@@ -172,8 +172,19 @@ footer span{font-family:'Rajdhani',sans-serif;font-size:.85rem;color:rgba(255,25
   .gal-grid{grid-template-columns:1fr 1fr;}
   .gi{grid-column:span 1!important;grid-row:span 1!important;height:200px!important;}
   .story-section{padding:0 5%;}
-  .story-h2{font-size:clamp(1.4rem,7vw,2.2rem);}
-  .story-content{max-width:100%;}
+  .story-h2{font-size:clamp(1.2rem,6vw,1.8rem);word-break:keep-all;hyphens:none;}
+  .story-content{max-width:100%;position:relative;z-index:2;}
+  .story-desc{color:rgba(255,255,255,.85);}
+  .story-section{align-items:flex-end;padding-bottom:8vh;padding-top:8vh;}
+  /* Gradiente que oscurece solo debajo del texto */
+  .story-section::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.55) 45%, transparent 100%);
+    pointer-events:none;
+    z-index:1;
+  }
 }
 @media(max-width:600px){
   section.std{padding:4rem 6%;}
