@@ -8,7 +8,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:#000;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+body{background:#080c14;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
 
 /* ── CANVAS ── */
 #c{
@@ -63,7 +63,7 @@ nav.scrolled{
 .story-tag{font-family:'Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.35);letter-spacing:.3em;margin-bottom:.4rem;}
 .story-h2{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,4vw,3rem);font-weight:800;line-height:1.05;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;word-break:keep-all;overflow-wrap:normal;hyphens:none;}
 .story-h2 .accent{color:#5B8DB8;}
-.story-desc{font-family:'Rajdhani',sans-serif;font-size:1rem;color:rgba(255,255,255,.45);line-height:1.75;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.5rem;}
+.story-desc{font-family:'Rajdhani',sans-serif;font-size:1rem;color:rgba(255,255,255,.85);line-height:1.75;letter-spacing:.05em;text-transform:uppercase;margin-bottom:1.5rem;}
 .story-specs{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1.5rem;}
 .spec-item{border-left:1px solid rgba(91,141,184,.3);padding:.5rem .75rem;}
 .spec-label{font-family:'Orbitron',sans-serif;font-size:.42rem;color:#5B8DB8;letter-spacing:.3em;display:block;margin-bottom:.2rem;}
@@ -83,17 +83,17 @@ nav.scrolled{
 .story-content.vis{opacity:1;transform:translateY(0);}
 
 /* ── BOTTOM SECTIONS (standard HTML) ── */
-#site-footer-sections{position:relative;z-index:20;background:#000;}
+#site-footer-sections{position:relative;z-index:20;background:#080c14;}
 
 section.std{padding:6rem 8%;position:relative;}
 section.std.bg-navy{background:#1a1f3a;}
-section.std.bg-black{background:#000;}
+section.std.bg-black{background:#080c14;}
 
 .sec-tag{font-family:'Orbitron',sans-serif;font-size:.5rem;color:#5B8DB8;letter-spacing:.4em;margin-bottom:.8rem;display:flex;align-items:center;gap:10px;}
 .sec-tag::before{content:'';display:block;width:22px;height:1px;background:#5B8DB8;}
 .sec-title{font-family:'Orbitron',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.06em;line-height:1.1;margin-bottom:.8rem;font-size:clamp(1.5rem,3vw,2.6rem);}
 .sec-title .a{color:#5B8DB8;}
-.sec-sub{font-family:'Rajdhani',sans-serif;font-size:.95rem;color:rgba(255,255,255,.4);letter-spacing:.07em;text-transform:uppercase;max-width:520px;line-height:1.7;margin-bottom:3rem;}
+.sec-sub{font-family:'Rajdhani',sans-serif;font-size:.95rem;color:rgba(255,255,255,.72);letter-spacing:.07em;text-transform:uppercase;max-width:520px;line-height:1.7;margin-bottom:3rem;}
 
 /* Service cards */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2px;background:rgba(91,141,184,.1);}
@@ -105,7 +105,7 @@ section.std.bg-black{background:#000;}
 .card-icon{width:44px;height:44px;border-radius:50%;background:#000;border:1px solid rgba(91,141,184,.3);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;}
 .card-icon svg{width:20px;height:20px;stroke:#5B8DB8;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .card-name{font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.14em;color:#fff;margin-bottom:.6rem;}
-.card-desc{font-family:'Rajdhani',sans-serif;font-size:.9rem;color:rgba(255,255,255,.45);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;}
+.card-desc{font-family:'Rajdhani',sans-serif;font-size:.9rem;color:rgba(255,255,255,.78);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;}
 
 /* Why grid */
 .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(91,141,184,.1);}
@@ -115,7 +115,7 @@ section.std.bg-black{background:#000;}
 .why-card:hover .ci{border-color:#5B8DB8;box-shadow:0 0 20px rgba(91,141,184,.2);}
 .why-card .ci svg{width:26px;height:26px;stroke:#5B8DB8;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 .why-card h3{font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.12em;color:#fff;margin-bottom:.6rem;}
-.why-card p{font-family:'Rajdhani',sans-serif;font-size:.9rem;color:rgba(255,255,255,.45);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;}
+.why-card p{font-family:'Rajdhani',sans-serif;font-size:.9rem;color:rgba(255,255,255,.78);line-height:1.65;letter-spacing:.04em;text-transform:uppercase;}
 
 /* Gallery */
 .gal-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:420px 220px;gap:3px;}
@@ -135,7 +135,7 @@ section.std.bg-black{background:#000;}
 .cd-icon{width:42px;height:42px;border-radius:50%;background:#000;border:1px solid rgba(91,141,184,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .cd-icon svg{width:18px;height:18px;stroke:#5B8DB8;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .cd-label{font-family:'Orbitron',sans-serif;font-size:.42rem;color:#5B8DB8;letter-spacing:.3em;display:block;margin-bottom:3px;}
-.cd-val{font-family:'Rajdhani',sans-serif;font-size:.95rem;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em;}
+.cd-val{font-family:'Rajdhani',sans-serif;font-size:.95rem;color:rgba(255,255,255,.95);text-transform:uppercase;letter-spacing:.06em;}
 .wa-btn{display:inline-flex;align-items:center;gap:9px;margin-top:1.2rem;padding:.8rem 1.6rem;background:#25D366;color:#000;text-decoration:none;font-family:'Orbitron',sans-serif;font-size:.52rem;font-weight:700;letter-spacing:.15em;transition:all .3s;}
 .wa-btn:hover{opacity:.88;transform:translateY(-2px);}
 .wa-btn svg{width:16px;height:16px;fill:#000;}
@@ -467,7 +467,7 @@ renderer.setSize(W,H);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.3;
+renderer.toneMappingExposure = 1.8;
 
 const scene = new THREE.Scene();
 
@@ -478,36 +478,41 @@ camera.position.set(0, 1.8, 7);
 scene.fog = new THREE.FogExp2(0x000205, 0.08);
 
 // ── LIGHTING ──
-scene.add(new THREE.AmbientLight(0x040810, 1.0));
+scene.add(new THREE.AmbientLight(0x1a2a3a, 2.5));
 
-const keyLight = new THREE.DirectionalLight(0x7ab4d8, 4.0);
+const keyLight = new THREE.DirectionalLight(0xaad4f0, 6.5);
 keyLight.position.set(-4, 6, 5);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.set(1024,1024);
 scene.add(keyLight);
 
-const rimLight = new THREE.DirectionalLight(0x9dd4f0, 2.5);
+const rimLight = new THREE.DirectionalLight(0xffffff, 4.0);
 rimLight.position.set(5, 2, -4);
 scene.add(rimLight);
 
-const bottomFill = new THREE.PointLight(0x1a2a4a, 1.2, 14);
+const bottomFill = new THREE.PointLight(0x4a7aaa, 2.5, 14);
 bottomFill.position.set(0,-4,1);
 scene.add(bottomFill);
 
-const droneGlow = new THREE.PointLight(0x5B8DB8, 1.8, 5);
+const droneGlow = new THREE.PointLight(0x5B8DB8, 3.5, 7);
 droneGlow.position.set(0,0,0);
 scene.add(droneGlow);
 
 // Top accent
-const topAccent = new THREE.PointLight(0x8ad0f5, 1.0, 8);
+const topAccent = new THREE.PointLight(0xc0e8ff, 2.5, 10);
 topAccent.position.set(0, 4, 0);
 scene.add(topAccent);
 
+// Front fill
+const frontFill = new THREE.PointLight(0xffffff, 2.0, 8);
+frontFill.position.set(0, 1, 6);
+scene.add(frontFill);
+
 // ── MATERIALS ──
-const matCarbon = new THREE.MeshStandardMaterial({ color:0x0d1020, metalness:0.35, roughness:0.65 });
-const matMetal  = new THREE.MeshStandardMaterial({ color:0x1c2a3e, metalness:0.88, roughness:0.18 });
-const matMotor  = new THREE.MeshStandardMaterial({ color:0x111825, metalness:0.92, roughness:0.12 });
-const matSteel  = new THREE.MeshStandardMaterial({ color:0x5B8DB8, metalness:0.72, roughness:0.28, emissive:0x112233, emissiveIntensity:0.5 });
+const matCarbon = new THREE.MeshStandardMaterial({ color:0x1a2540, metalness:0.5,  roughness:0.55 });
+const matMetal  = new THREE.MeshStandardMaterial({ color:0x2a4060, metalness:0.92, roughness:0.12, emissive:0x0a1830, emissiveIntensity:0.4 });
+const matMotor  = new THREE.MeshStandardMaterial({ color:0x1e3050, metalness:0.95, roughness:0.08, emissive:0x0a1525, emissiveIntensity:0.3 });
+const matSteel  = new THREE.MeshStandardMaterial({ color:0x6aa8d8, metalness:0.75, roughness:0.22, emissive:0x2255aa, emissiveIntensity:1.2 });
 const matProp   = new THREE.MeshStandardMaterial({ color:0x1e2d45, metalness:0.25, roughness:0.75, transparent:true, opacity:0.88, side:THREE.DoubleSide });
 const matDisc   = new THREE.MeshStandardMaterial({ color:0x5B8DB8, metalness:0.4,  roughness:0.5,  transparent:true, opacity:0.13, side:THREE.DoubleSide });
 const matLens   = new THREE.MeshStandardMaterial({ color:0x050810, metalness:0.05, roughness:0.02, transparent:true, opacity:0.96 });
