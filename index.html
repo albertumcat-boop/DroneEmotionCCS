@@ -24,23 +24,31 @@ a{color:inherit;text-decoration:none}
 
 /* HERO */
 .hero-cta{width:100%;margin-top:16px;font-size:.78rem}
-.hero{position:relative;margin:0 -16px;min-height:86vh;min-height:86svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;isolation:isolate}
+.hero{position:relative;margin:0 -16px;min-height:66vh;min-height:66svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;isolation:isolate}
 .hero img.ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;z-index:-2}
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,12,20,.55) 0%,rgba(8,12,20,0) 22%,rgba(8,12,20,.15) 45%,rgba(8,12,20,.92) 78%,var(--bg) 100%)}
 .top{position:absolute;top:0;left:0;right:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;display:flex;justify-content:space-between;align-items:center}
 .top img{height:30px;width:auto}
 .share{background:rgba(8,12,20,.55);border:1px solid var(--line);color:#fff;border-radius:999px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(6px)}
 .share svg{width:18px;height:18px}
-.hero-in{padding:0 16px 22px}
-.logo{width:min(260px,70%);height:auto;display:block;margin-bottom:12px;animation:fly 1.2s cubic-bezier(.2,.8,.2,1) both}
+.hero-in{padding:0 16px 18px;text-align:center}
+.logo{width:min(240px,64%);height:auto;display:block;margin:0 auto;animation:fly 1.2s cubic-bezier(.2,.8,.2,1) both}
 @keyframes fly{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
-.legal{font-size:.78rem;color:var(--mut);letter-spacing:.06em}
-.legal b{color:var(--acc2);font-weight:600}
-.tag{margin-top:10px;font-size:1.02rem;color:#fff}
+
+/* IDENTIDAD */
+.id{text-align:center;padding:4px 0 6px}
+.id h1{font-size:clamp(1.05rem,5.4vw,1.35rem);font-weight:800;line-height:1.2}
+.rif{display:inline-block;margin-top:8px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg2);font-size:.72rem;color:var(--acc2)}
+.loc{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:.88rem;color:var(--mut)}
+.loc svg{width:15px;height:15px;stroke:var(--acc);fill:none;stroke-width:2}
+.sep{height:1px;margin:16px auto;width:60px;background:var(--acc);opacity:.6}
+.tag{font-size:1rem;color:rgba(255,255,255,.88);max-width:34ch;margin:0 auto}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px}
+.chips span{font-size:.74rem;padding:5px 10px;border-radius:999px;background:rgba(91,141,184,.12);color:var(--acc2);border:1px solid var(--line)}
 
 /* VIDEO */
 .vid{margin-top:18px}
-.vbox{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#05080f url(mark.webp) center/38% no-repeat}
+.vbox{position:relative;aspect-ratio:9/16;width:min(100%,calc(76svh * 9 / 16));margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#05080f url(mark.webp) center/38% no-repeat}
 .vbox .th{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
 .vbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .play{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(180deg,rgba(8,12,20,.1),rgba(8,12,20,.55));border:0;color:#fff;cursor:pointer;width:100%}
@@ -93,11 +101,18 @@ footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
     </div>
     <div class="hero-in">
       <img class="logo" src="logo.webp" alt="Drone Emotion CCS" width="520" height="261">
-      <p class="legal o">DRONEMOTION CCS, C.A. · <b>RIF J-505790188</b></p>
-      <p class="tag">Servicios aéreos con drones (RPA) en Caracas: video, publicidad, eventos y topografía.</p>
-      <button class="b pri hero-cta" id="heroPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg><span class="o">Ver video promocional</span></button>
     </div>
   </header>
+
+  <section class="id">
+    <h1 class="o">DRONEMOTION CCS, C.A.</h1>
+    <span class="rif o">RIF J-505790188</span>
+    <p class="loc"><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>La California, Caracas · Venezuela</p>
+    <div class="sep"></div>
+    <p class="tag">Servicios aéreos con drones (RPA): producción audiovisual, eventos, fotogrametría y topografía.</p>
+    <div class="chips"><span>Publicidad</span><span>FPV</span><span>Eventos</span><span>Topografía</span></div>
+    <button class="b pri hero-cta" id="heroPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg><span class="o">Ver video promocional</span></button>
+  </section>
 
   <!-- VIDEO PROMOCIONAL -->
   <section class="vid" id="video" aria-label="Video promocional">
