@@ -90,7 +90,14 @@ footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
 .vm[hidden]{display:none}
 @keyframes vin{from{opacity:0}to{opacity:1}}
 .vf{width:min(100vw,calc(100dvh * 9 / 16));height:min(100dvh,calc(100vw * 16 / 9));position:relative}
-.vf iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vf{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.vf video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;pointer-events:none}
+.vstate{position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:rgba(0,0,0,.45);display:grid;place-items:center;opacity:0;transform:scale(.85);transition:opacity .2s,transform .2s;pointer-events:none}
+.vstate.on{opacity:1;transform:none}
+.vstate svg{width:32px;height:32px;fill:#fff}
+.vsound{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:.85rem;padding:8px 14px;border-radius:999px;white-space:nowrap;pointer-events:none}
+.vbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.15);pointer-events:none}
+.vbar i{display:block;height:100%;width:0;background:var(--acc)}
 .vclose{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;cursor:pointer;z-index:2;backdrop-filter:blur(6px)}
 .vclose svg{width:20px;height:20px}
 @media (min-width:700px){.hero{min-height:640px;margin:0;border-radius:0 0 22px 22px}}
@@ -124,7 +131,7 @@ footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
   <!-- VIDEO PROMOCIONAL -->
   <section class="vid" id="video" aria-label="Video promocional">
     <div class="vbox" id="vbox">
-      <img class="th" src="https://drive.google.com/thumbnail?id=1118TViPcugEczk1k46rH0DJaaO9HV-lz&sz=w800" alt="" loading="lazy" onerror="this.remove()">
+      <img class="th" src="promo-poster.webp" alt="" loading="lazy" onerror="this.remove()">
       <button class="play" id="play" aria-label="Reproducir video promocional">
         <span class="pbtn"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span>
         <span class="o">Video promocional</span>
@@ -190,29 +197,54 @@ footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
 </main>
 <div class="toast" id="toast"></div>
 <div class="vm" id="vm" hidden role="dialog" aria-label="Video promocional">
-  <div class="vf" id="vframe"></div>
+  <div class="vf" id="vframe">
+    <video id="pv" src="promo.mp4" poster="promo-poster.webp" playsinline webkit-playsinline preload="none" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback"></video>
+    <div class="vstate" id="vstate" aria-hidden="true"></div>
+    <div class="vsound" id="vsound" hidden>🔊 Toca para activar el sonido</div>
+    <div class="vbar"><i id="vbar"></i></div>
+  </div>
   <button class="vclose" id="vclose" aria-label="Cerrar video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 
 <script>
 (function(){
-  var VID='1118TViPcugEczk1k46rH0DJaaO9HV-lz';
   var PAGE='https://albertumcat-boop.github.io/DroneEmotionCCS/';
-  // VIDEO A PANTALLA COMPLETA
-  var vm=document.getElementById('vm'),vf=document.getElementById('vframe');
+  // VIDEO A PANTALLA COMPLETA — reproductor propio, sin controles: tocar = pausa / sigue
+  var vm=document.getElementById('vm'),vf=document.getElementById('vframe'),pv=document.getElementById('pv'),
+      vs=document.getElementById('vstate'),snd=document.getElementById('vsound'),bar=document.getElementById('vbar');
+  var ICON_PLAY='<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>',
+      ICON_PAUSE='<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+      ICON_REPLAY='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.7L3 8"/><path d="M3 3v5h5"/></svg>';
+  var hideT;
+  function flash(icon,stay){vs.innerHTML=icon;vs.classList.add('on');clearTimeout(hideT);if(!stay)hideT=setTimeout(function(){vs.classList.remove('on')},650)}
+  function start(){
+    pv.muted=false;
+    var p=pv.play();
+    if(p&&p.catch)p.catch(function(){ // sin gesto del usuario (link ?video): arranca en silencio
+      pv.muted=true;snd.hidden=false;pv.play().catch(function(){flash(ICON_PLAY,true)});
+    });
+  }
+  vf.addEventListener('click',function(e){
+    if(e.target.closest('.vclose'))return;
+    if(pv.muted&&!snd.hidden){pv.muted=false;snd.hidden=true;return}
+    if(pv.ended){pv.currentTime=0;pv.play();flash(ICON_PLAY);return}
+    if(pv.paused){pv.play();flash(ICON_PLAY)}else{pv.pause();flash(ICON_PAUSE,true)}
+  });
+  pv.addEventListener('ended',function(){flash(ICON_REPLAY,true)});
+  pv.addEventListener('playing',function(){vs.classList.remove('on')});
+  pv.addEventListener('timeupdate',function(){if(pv.duration)bar.style.width=(pv.currentTime/pv.duration*100)+'%'});
+  pv.addEventListener('contextmenu',function(e){e.preventDefault()});
   function openVideo(){
-    var f=document.createElement('iframe');
-    f.src='https://drive.google.com/file/d/'+VID+'/preview';
-    f.allow='autoplay; fullscreen';f.allowFullscreen=true;f.title='Video promocional Drone Emotion CCS';
-    vf.innerHTML='';vf.appendChild(f);
     vm.hidden=false;document.documentElement.style.overflow='hidden';
+    start();
     // Android/escritorio: pantalla completa real; iPhone: la capa ya ocupa toda la pantalla
     try{var r=vm.requestFullscreen||vm.webkitRequestFullscreen;if(r){var p=r.call(vm);if(p&&p.catch)p.catch(function(){})}}catch(e){}
     if(history.pushState)history.pushState({v:1},'');
   }
   function closeVideo(fromPop){
     if(vm.hidden)return;
-    vm.hidden=true;vf.innerHTML='';document.documentElement.style.overflow='';
+    vm.hidden=true;pv.pause();pv.currentTime=0;snd.hidden=true;vs.classList.remove('on');bar.style.width='0';
+    document.documentElement.style.overflow='';
     var d=document,x=d.exitFullscreen||d.webkitExitFullscreen;
     if((d.fullscreenElement||d.webkitFullscreenElement)&&x)try{x.call(d)}catch(e){}
     if(!fromPop&&history.state&&history.state.v)history.back();
@@ -224,7 +256,7 @@ footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo()});
   // ?video o #video en el link del NFC: muestra el video de entrada
   if(/[?&]video\b/.test(location.search)||location.hash==='#video'){
-    vf.innerHTML='';openVideo();
+    openVideo();
   }
 
   function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');setTimeout(function(){e.classList.remove('on')},2400)}
