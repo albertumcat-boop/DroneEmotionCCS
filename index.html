@@ -86,6 +86,13 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);text-al
 footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,40px);opacity:0;background:var(--acc);color:#05080f;padding:10px 16px;border-radius:999px;font-weight:600;font-size:.88rem;transition:.3s;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.vm{position:fixed;inset:0;z-index:50;background:#000;display:flex;align-items:center;justify-content:center;animation:vin .25s ease}
+.vm[hidden]{display:none}
+@keyframes vin{from{opacity:0}to{opacity:1}}
+.vf{width:min(100vw,calc(100dvh * 9 / 16));height:min(100dvh,calc(100vw * 16 / 9));position:relative}
+.vf iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vclose{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;cursor:pointer;z-index:2;backdrop-filter:blur(6px)}
+.vclose svg{width:20px;height:20px}
 @media (min-width:700px){.hero{min-height:640px;margin:0;border-radius:0 0 22px 22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -182,27 +189,42 @@ footer img{height:22px;width:auto;opacity:.7;margin-bottom:8px}
   </footer>
 </main>
 <div class="toast" id="toast"></div>
+<div class="vm" id="vm" hidden role="dialog" aria-label="Video promocional">
+  <div class="vf" id="vframe"></div>
+  <button class="vclose" id="vclose" aria-label="Cerrar video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
 
 <script>
 (function(){
   var VID='1118TViPcugEczk1k46rH0DJaaO9HV-lz';
   var PAGE='https://albertumcat-boop.github.io/DroneEmotionCCS/';
-  var box=document.getElementById('vbox');
-  function playVideo(){
-    if(box.querySelector('iframe'))return;
+  // VIDEO A PANTALLA COMPLETA
+  var vm=document.getElementById('vm'),vf=document.getElementById('vframe');
+  function openVideo(){
     var f=document.createElement('iframe');
     f.src='https://drive.google.com/file/d/'+VID+'/preview';
     f.allow='autoplay; fullscreen';f.allowFullscreen=true;f.title='Video promocional Drone Emotion CCS';
-    box.innerHTML='';box.appendChild(f);
+    vf.innerHTML='';vf.appendChild(f);
+    vm.hidden=false;document.documentElement.style.overflow='hidden';
+    // Android/escritorio: pantalla completa real; iPhone: la capa ya ocupa toda la pantalla
+    try{var r=vm.requestFullscreen||vm.webkitRequestFullscreen;if(r){var p=r.call(vm);if(p&&p.catch)p.catch(function(){})}}catch(e){}
+    if(history.pushState)history.pushState({v:1},'');
   }
-  document.getElementById('play').addEventListener('click',playVideo);
-  document.getElementById('heroPlay').addEventListener('click',function(){
-    playVideo();goVideo();
-  });
-  function goVideo(){window.scrollTo({top:box.getBoundingClientRect().top+window.pageYOffset-70,behavior:'smooth'})}
-  // ?video o #video en el link del NFC: abre el video directamente
+  function closeVideo(fromPop){
+    if(vm.hidden)return;
+    vm.hidden=true;vf.innerHTML='';document.documentElement.style.overflow='';
+    var d=document,x=d.exitFullscreen||d.webkitExitFullscreen;
+    if((d.fullscreenElement||d.webkitFullscreenElement)&&x)try{x.call(d)}catch(e){}
+    if(!fromPop&&history.state&&history.state.v)history.back();
+  }
+  document.getElementById('play').addEventListener('click',openVideo);
+  document.getElementById('heroPlay').addEventListener('click',openVideo);
+  document.getElementById('vclose').addEventListener('click',function(){closeVideo()});
+  window.addEventListener('popstate',function(){closeVideo(true)}); // botón "atrás" del celular cierra el video
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeVideo()});
+  // ?video o #video en el link del NFC: muestra el video de entrada
   if(/[?&]video\b/.test(location.search)||location.hash==='#video'){
-    playVideo();setTimeout(goVideo,300);
+    vf.innerHTML='';openVideo();
   }
 
   function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.add('on');setTimeout(function(){e.classList.remove('on')},2400)}
